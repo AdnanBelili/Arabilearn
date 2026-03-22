@@ -1,8 +1,14 @@
 {
   "short_name": "Arabilearn",
   "name": "Arabilearn",
-  "icons": [{"src": "icon.svg", "sizes": "512x512", "type": "image/svg+xml"}],
-  "start_url": ".",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#8e44ad",
   "theme_color": "#8e44ad"

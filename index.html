@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>ArabiLearn PRO</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#0a0a10;font-family:Georgia,serif;color:#e8dcc8;min-height:100vh;}
+  button{font-family:inherit;-webkit-tap-highlight-color:transparent;outline:none;cursor:pointer;}
+  #app{display:flex;flex-direction:column;align-items:center;padding:0 10px 40px;max-width:480px;margin:0 auto;}
+  .bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 15% 5%,#1e0f35 0%,transparent 50%),
+               radial-gradient(ellipse at 85% 95%,#091a1a 0%,transparent 50%);}
+
+  /* Header */
+  .header{text-align:center;padding:20px 0 12px;position:relative;z-index:1;width:100%;}
+  .deco{font-size:12px;color:#c8a96e33;letter-spacing:6px;margin-bottom:6px;}
+  .title{font-size:24px;font-weight:700;color:#c8a96e;letter-spacing:2px;}
+  .subtitle{font-size:9.5px;color:#e8dcc855;letter-spacing:3px;text-transform:uppercase;margin-top:5px;}
+
+  /* Unlock banner */
+  .unlock-btn{width:100%;max-width:460px;position:relative;z-index:10;margin-bottom:10px;
+    background:linear-gradient(135deg,#2a1a00,#4a3000);border:1.5px solid #c8a96e66;
+    border-radius:14px;padding:13px 16px;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    color:#c8a96e;font-size:14px;letter-spacing:0.5px;
+    box-shadow:0 4px 20px #c8a96e22;animation:pulse 2s ease-in-out infinite;}
+
+  /* Tabs */
+  .tabs{width:100%;max-width:460px;display:flex;gap:4px;margin-bottom:8px;position:relative;z-index:1;
+    background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.07);padding:4px;}
+  .tab{flex:1;padding:9px 4px;font-size:11px;border:none;border-radius:10px;background:transparent;
+    color:#e8dcc855;letter-spacing:0.5px;transition:all 0.2s;border-bottom:2px solid transparent;}
+  .tab.active{background:rgba(200,169,110,0.18);color:#c8a96e;font-weight:700;border-bottom:2px solid #c8a96e;}
+
+  /* Slate */
+  .slate-wrap{width:100%;max-width:460px;position:relative;z-index:1;margin-bottom:8px;}
+  .slate-box{position:relative;height:190px;border-radius:16px;overflow:hidden;
+    border:1.5px solid #c8a96e44;background:#0c0c18;
+    box-shadow:0 0 32px #c8a96e12,inset 0 0 24px #00000060;}
+  .slate-tag{position:absolute;top:7px;left:11px;font-size:10px;letter-spacing:1px;
+    color:#c8a96e88;z-index:4;pointer-events:none;}
+  canvas{position:absolute;inset:0;width:100%;height:100%;}
+  canvas.ink{touch-action:none;cursor:crosshair;}
+  .slate-empty{height:190px;border-radius:16px;border:1.5px solid rgba(255,255,255,0.06);
+    background:#0c0c18;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:6px;opacity:0.28;}
+  .btn-row{display:flex;gap:7px;margin-top:7px;}
+  .btn{flex:1;border-radius:11px;padding:9px 6px;font-size:11px;letter-spacing:0.2px;
+    border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:#e8dcc8aa;transition:all 0.18s;}
+  .btn.green{background:linear-gradient(135deg,#1a3d2a,#215e31);border-color:#3DC98A44;color:#3DC98Acc;font-weight:700;}
+  .btn.blue{background:linear-gradient(135deg,#162840,#1e4570);border-color:#4D9FEF44;color:#4D9FEFcc;font-weight:700;}
+
+  /* Quiz write question card */
+  .qcard{border-radius:13px;margin-bottom:8px;padding:10px 14px;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;}
+
+  /* Detail panel */
+  .panel{width:100%;max-width:460px;min-height:148px;border:1.5px solid #c8a96e1a;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:10px;padding:12px;position:relative;z-index:1;
+    background:rgba(255,255,255,0.015);transition:border-color .5s,box-shadow .5s;}
+  .panel-inner{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;}
+  .panel-num{font-size:11px;color:#fff;border-radius:20px;padding:2px 10px;align-self:flex-end;}
+  .panel-letter{font-size:82px;line-height:1;}
+  .panel-name{font-size:18px;font-weight:700;letter-spacing:2px;}
+  .panel-pron{font-size:11px;border-radius:20px;padding:3px 11px;}
+  .panel-sound{font-size:11px;color:#e8dcc877;text-align:center;font-style:italic;max-width:300px;}
+  .panel-ex{display:flex;align-items:center;gap:10px;padding:5px 14px;border-radius:30px;}
+  .panel-ar{font-size:18px;}
+  .panel-fr{font-size:11px;color:#e8dcc877;}
+  .panel-empty{display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0.28;}
+
+  /* Letter grid */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;
+    width:100%;max-width:460px;position:relative;z-index:1;}
+  .card{border-radius:12px;padding:10px 3px 9px;display:flex;flex-direction:column;
+    align-items:center;gap:2px;transition:all 0.28s cubic-bezier(.34,1.4,.64,1);
+    position:relative;border:1.5px solid;background:none;}
+  .card.no-labels{padding:14px 3px;}
+  .card-arabic{font-size:34px;line-height:1.15;transition:color 0.25s;}
+  .card.no-labels .card-arabic{font-size:40px;}
+  .card-name{font-size:7.5px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;}
+  .card-pron{font-size:7px;border-radius:20px;padding:1px 5px;}
+
+  /* Quiz mode */
+  .quiz-top{width:100%;max-width:460px;display:flex;align-items:center;
+    justify-content:space-between;padding:18px 0 10px;position:relative;z-index:1;}
+  .back-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px;padding:7px 15px;color:#e8dcc888;font-size:12px;}
+  .quiz-title{font-size:16px;font-weight:700;color:#c8a96e;letter-spacing:1px;}
+  .score-row{display:flex;gap:7px;margin-bottom:11px;position:relative;z-index:1;}
+  .score-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+    border-radius:13px;padding:9px 13px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:58px;}
+  .score-num{font-size:19px;font-weight:700;}
+  .score-lb{font-size:8.5px;color:#e8dcc844;letter-spacing:1px;text-transform:uppercase;}
+  .qbox{width:100%;max-width:460px;background:rgba(255,255,255,0.025);
+    border:1.5px solid rgba(255,255,255,0.07);border-radius:18px;
+    padding:15px 18px 13px;margin-bottom:11px;display:flex;flex-direction:column;
+    align-items:center;gap:3px;position:relative;z-index:1;min-height:105px;}
+  .qlabel{font-size:9.5px;color:#e8dcc844;letter-spacing:2px;text-transform:uppercase;}
+  .qname{font-size:30px;font-weight:700;color:#c8a96e;letter-spacing:2px;display:flex;align-items:center;gap:8px;}
+  .qsound{font-size:11px;color:#e8dcc844;font-style:italic;text-align:center;margin-top:2px;}
+  .qresult{margin-top:10px;font-size:22px;}
+  .speak-btn{background:none;border:none;font-size:18px;opacity:0.6;padding:0;line-height:1;}
+
+  /* Misc */
+  .quiz-btn{position:relative;z-index:1;margin-bottom:10px;
+    background:linear-gradient(135deg,#1a3a5c,#2563a8);border:1.5px solid #4D9FEF55;
+    border-radius:30px;padding:9px 26px;color:#e8dcc8;font-size:13px;letter-spacing:1px;
+    display:flex;align-items:center;gap:7px;box-shadow:0 3px 18px #2563a833;}
+  .foot{margin-top:14px;font-size:9px;color:#e8dcc822;letter-spacing:2px;text-transform:uppercase;
+    position:relative;z-index:1;}
+
+  @keyframes pop{0%{transform:scale(.5);opacity:0}65%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  @keyframes celebrate{0%{transform:scale(1)}30%{transform:scale(1.04)}70%{transform:scale(.98)}100%{transform:scale(1)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.65}}
+  @keyframes fadein{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+  .fadein{animation:fadein .35s cubic-bezier(.34,1.56,.64,1) forwards;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="app"></div>
+
+<script>
+const letters = [
+  {arabic:"ا",name:"Alif",pron:"[Alif]",sound:"'a' comme dans ami",g:["#B5651D","#E8944A"],ex:"أَسَد",fr:"lion"},
+  {arabic:"ب",name:"Ba",pron:"[Ba]",sound:"'b' comme dans bonjour",g:["#1A5276","#2E86C1"],ex:"بَيْت",fr:"maison"},
+  {arabic:"ت",name:"Ta",pron:"[Ta]",sound:"'t' comme dans table",g:["#1E8449","#27AE60"],ex:"تُفَّاح",fr:"pomme"},
+  {arabic:"ث",name:"Tha",pron:"[Tha]",sound:"'th' anglais de think",g:["#922B21","#E74C3C"],ex:"ثَلْج",fr:"neige"},
+  {arabic:"ج",name:"Jim",pron:"[Jim]",sound:"'dj' comme dans djinn",g:["#6C3483","#9B59B6"],ex:"جَمَل",fr:"chameau"},
+  {arabic:"ح",name:"Ha",pron:"[Ha]",sound:"'h' soufflé de la gorge",g:["#A04000","#E67E22"],ex:"حَصَان",fr:"cheval"},
+  {arabic:"خ",name:"Kha",pron:"[Kha]",sound:"'ch' allemand de Bach",g:["#0E6655","#1ABC9C"],ex:"خُبْز",fr:"pain"},
+  {arabic:"د",name:"Dal",pron:"[Dal]",sound:"'d' comme dans doux",g:["#7D6608","#D4AC0D"],ex:"دَرْس",fr:"leçon"},
+  {arabic:"ذ",name:"Dhal",pron:"[Dhal]",sound:"'th' anglais de this",g:["#784212","#CA6F1E"],ex:"ذَهَب",fr:"or"},
+  {arabic:"ر",name:"Ra",pron:"[Ra]",sound:"'r' roulé comme en espagnol",g:["#154360","#1F618D"],ex:"رَمَل",fr:"sable"},
+  {arabic:"ز",name:"Zay",pron:"[Zay]",sound:"'z' comme dans zèbre",g:["#4A235A","#8E44AD"],ex:"زَهْرَة",fr:"fleur"},
+  {arabic:"س",name:"Sin",pron:"[Sin]",sound:"'s' comme dans soleil",g:["#145A32","#1E8449"],ex:"سَمَك",fr:"poisson"},
+  {arabic:"ش",name:"Shin",pron:"[Shin]",sound:"'ch' comme dans chat",g:["#78281F","#C0392B"],ex:"شَمْس",fr:"soleil"},
+  {arabic:"ص",name:"Sad",pron:"[Sad]",sound:"'s' emphatique du ventre",g:["#1A5276","#21618C"],ex:"صَابُون",fr:"savon"},
+  {arabic:"ض",name:"Dad",pron:"[Dad]",sound:"'d' emphatique et sourd",g:["#1B4F72","#2874A6"],ex:"ضَوْء",fr:"lumière"},
+  {arabic:"ط",name:"Ta'",pron:"[Ta']",sound:"'t' emphatique du fond",g:["#0B5345","#148F77"],ex:"طَاوِلَة",fr:"table"},
+  {arabic:"ظ",name:"Dha'",pron:"[Dha']",sound:"'dh' emphatique de la gorge",g:["#186A3B","#1E8449"],ex:"ظِل",fr:"ombre"},
+  {arabic:"ع",name:"'Ayn",pron:"['Ayn]",sound:"son guttural unique à l'arabe",g:["#6E2F1A","#B7500A"],ex:"عَيْن",fr:"œil"},
+  {arabic:"غ",name:"Ghayn",pron:"[Ghayn]",sound:"'r' grasseyé comme en français",g:["#5B2C6F","#7D3C98"],ex:"غُرْفَة",fr:"chambre"},
+  {arabic:"ف",name:"Fa",pron:"[Fa]",sound:"'f' comme dans fleur",g:["#7B241C","#A93226"],ex:"فِيل",fr:"éléphant"},
+  {arabic:"ق",name:"Qaf",pron:"[Qaf]",sound:"'k' du fond de la gorge",g:["#1C2833","#2C3E50"],ex:"قَمَر",fr:"lune"},
+  {arabic:"ك",name:"Kaf",pron:"[Kaf]",sound:"'k' comme dans kaki",g:["#1A5276","#2980B9"],ex:"كِتَاب",fr:"livre"},
+  {arabic:"ل",name:"Lam",pron:"[Lam]",sound:"'l' comme dans lune",g:["#0E6655","#17A589"],ex:"لَيْل",fr:"nuit"},
+  {arabic:"م",name:"Mim",pron:"[Mim]",sound:"'m' comme dans maison",g:["#6E2F1A","#E67E22"],ex:"مَاء",fr:"eau"},
+  {arabic:"ن",name:"Nun",pron:"[Nun]",sound:"'n' comme dans nuit",g:["#4D5656","#7F8C8D"],ex:"نَجْم",fr:"étoile"},
+  {arabic:"هـ",name:"Ha'",pron:"[Ha']",sound:"'h' doux comme un souffle",g:["#7B241C","#C0392B"],ex:"هِلَال",fr:"croissant"},
+  {arabic:"و",name:"Waw",pron:"[Waw]",sound:"'w' ou 'ou' comme dans oui",g:["#154360","#1A5276"],ex:"وَرْدَة",fr:"rose"},
+  {arabic:"ي",name:"Ya",pron:"[Ya]",sound:"'y' ou 'i' comme dans yoga",g:["#4A235A","#7D3C98"],ex:"يَد",fr:"main"},
+];
+
+// ─── SPEECH ───────────────────────────────────────────────────────────────────
+let audioUnlocked = false;
+
+function speak(text) {
+  if (!audioUnlocked || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const go = () => {
+    const u = new SpeechSynthesisUtterance(text);
+    const vs = window.speechSynthesis.getVoices();
+    const v = vs.find(v=>v.lang==="ar-SA") || vs.find(v=>v.lang==="ar-EG") ||
+              vs.find(v=>v.lang.startsWith("ar")) || vs[0] || null;
+    if(v){u.voice=v;u.lang=v.lang;}else{u.lang="ar-SA";}
+    u.rate=0.82; u.pitch=1; u.volume=1;
+    window.speechSynthesis.speak(u);
+  };
+  if(window.speechSynthesis.getVoices().length>0){go();}
+  else{window.speechSynthesis.onvoiceschanged=()=>{window.speechSynthesis.onvoiceschanged=null;go();};}
+}
+
+function unlockAudio() {
+  if (!window.speechSynthesis) return;
+  audioUnlocked = true;
+  window.speechSynthesis.cancel();
+  const go = () => {
+    const u = new SpeechSynthesisUtterance("أ");
+    const vs = window.speechSynthesis.getVoices();
+    const v = vs.find(v=>v.lang==="ar-SA") || vs.find(v=>v.lang.startsWith("ar")) || vs[0] || null;
+    if(v){u.voice=v;u.lang=v.lang;}else{u.lang="ar-SA";}
+    u.rate=1; u.volume=1;
+    window.speechSynthesis.speak(u);
+  };
+  if(window.speechSynthesis.getVoices().length>0){go();}
+  else{window.speechSynthesis.onvoiceschanged=()=>{window.speechSynthesis.onvoiceschanged=null;go();};}
+}
+
+// ─── SLATE ────────────────────────────────────────────────────────────────────
+class Slate {
+  constructor(modelCanvas, inkCanvas, accent) {
+    this.mc = modelCanvas; this.ic = inkCanvas; this.accent = accent;
+    this.drawing = false; this.prev = null; this.moved = false;
+    this._bind();
+  }
+  resize() {
+    [this.mc, this.ic].forEach(c => {
+      const b = c.getBoundingClientRect();
+      c.width  = b.width  * devicePixelRatio;
+      c.height = b.height * devicePixelRatio;
+      c.getContext("2d").scale(devicePixelRatio, devicePixelRatio);
+    });
+  }
+  paintGhost(arabic, alpha=0) {
+    const c=this.mc, ctx=c.getContext("2d");
+    ctx.clearRect(0,0,c.width,c.height);
+    if(!arabic||alpha===0) return;
+    const w=c.width/devicePixelRatio, h=c.height/devicePixelRatio;
+    ctx.save();
+    ctx.filter = alpha<0.25?"blur(2px)":"none";
+    ctx.font=`bold ${Math.min(w,h)*0.72}px serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.globalAlpha=alpha; ctx.fillStyle="#fff";
+    ctx.fillText(arabic, w/2, h/2);
+    ctx.restore();
+  }
+  wipeInk() { const c=this.ic; c.getContext("2d").clearRect(0,0,c.width,c.height); }
+  _pt(e) {
+    const r=this.ic.getBoundingClientRect(), s=e.touches?e.touches[0]:e;
+    return {x:s.clientX-r.left, y:s.clientY-r.top};
+  }
+  _dot(ctx,p) { ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle=this.accent;ctx.globalAlpha=0.92;ctx.fill(); }
+  _bind() {
+    const down=e=>{e.preventDefault();this.drawing=true;this.moved=false;this.prev=this._pt(e);};
+    const move=e=>{
+      e.preventDefault(); if(!this.drawing) return;
+      const p=this._pt(e), ctx=this.ic.getContext("2d");
+      const dx=p.x-this.prev.x, dy=p.y-this.prev.y;
+      if(Math.sqrt(dx*dx+dy*dy)>2) this.moved=true;
+      ctx.beginPath();ctx.moveTo(this.prev.x,this.prev.y);ctx.lineTo(p.x,p.y);
+      ctx.strokeStyle=this.accent;ctx.lineWidth=5;ctx.lineCap="round";ctx.globalAlpha=0.92;ctx.stroke();
+      this.prev=p;
+    };
+    const up=()=>{
+      if(!this.drawing) return;
+      if(!this.moved&&this.prev) this._dot(this.ic.getContext("2d"),this.prev);
+      this.drawing=false; this.prev=null; this.moved=false;
+    };
+    this.ic.addEventListener("mousedown",down); this.ic.addEventListener("mousemove",move);
+    this.ic.addEventListener("mouseup",up); this.ic.addEventListener("mouseleave",up);
+    this.ic.addEventListener("touchstart",down,{passive:false});
+    this.ic.addEventListener("touchmove",move,{passive:false});
+    this.ic.addEventListener("touchend",up);
+  }
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state = {
+  screen: "explore",      // "explore" | "quiz"
+  slateMode: "train",     // "train" | "quiz-write"
+  selected: null,
+  quizLetter: rnd(null),
+  revealed: false,
+  showGhost: true,
+  soundOn: false,
+  // quiz recognition
+  target: rnd(null),
+  score:0, total:0, streak:0, best:0,
+  result:null, shaking:false, celebrating:false,
+};
+let trainSlate=null, quizSlate=null;
+
+function rnd(exclude) {
+  const pool = exclude ? letters.filter(l=>l.name!==exclude) : letters;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = state.screen==="explore" ? renderExplore() : renderQuiz();
+  bindEvents();
+  // Init slates after DOM is ready
+  if(state.screen==="explore") {
+    initTrainSlate(); initQuizSlate();
+  }
+}
+
+function renderExplore() {
+  const s=state, sel=s.selected;
+  return `
+  <div class="header" style="position:relative;z-index:1;width:100%;">
+    <div class="deco">ا ب ت ث ج ح خ د</div>
+    <h1 class="title">الحروف العربية</h1>
+    <p class="subtitle">28 lettres • Tracé interactif</p>
+  </div>
+
+  ${!s.soundOn ? `<button class="unlock-btn" id="unlock-btn">🔊 Appuie ici pour activer le son</button>` : `<div style="font-size:11px;color:#3DC98A88;margin-bottom:8px;position:relative;z-index:1;">🔊 Son activé</div>`}
+
+  <div class="tabs" style="position:relative;z-index:1;">
+    <button class="tab ${s.slateMode==='train'?'active':''}" data-tab="train">✏️ Entraînement</button>
+    <button class="tab ${s.slateMode==='quiz-write'?'active':''}" data-tab="quiz-write">🎲 Quiz Écriture</button>
+  </div>
+
+  ${s.slateMode==='train' ? renderTrainSlate(sel) : renderQuizSlate()}
+
+  <button class="quiz-btn" id="go-quiz">🎯 Mode Quiz Reconnaissance</button>
+
+  ${s.slateMode==='train' ? renderPanel(sel) : ''}
+
+  ${s.slateMode==='train' ? renderGrid(true) : ''}
+
+  <p class="foot">28 lettres • Alphabet arabe complet</p>
+  `;
+}
+
+function renderTrainSlate(sel) {
+  const accent = sel ? sel.g[1] : "#c8a96e";
+  if(!sel) return `<div class="slate-wrap"><div class="slate-empty" style="border:1.5px solid rgba(255,255,255,0.06);">
+    <div style="font-size:28px;">✏️</div><p style="font-size:12px;color:#e8dcc8;letter-spacing:1px;">Clique sur une lettre pour tracer</p>
+  </div></div>`;
+  return `<div class="slate-wrap">
+    <div class="slate-box" style="border-color:${accent}55;" id="train-box">
+      <div class="slate-tag" style="color:${accent}88;">${state.showGhost?'Modèle : '+sel.arabic:'Modèle masqué'}</div>
+      <canvas id="train-model"></canvas>
+      <canvas id="train-ink" class="ink"></canvas>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="train-wipe">🗑️ Effacer</button>
+      <button class="btn" id="train-toggle" style="${state.showGhost?`background:${accent}18;border-color:${accent}44;color:${accent}cc`:''}">${state.showGhost?'👁 Masquer':'👁 Modèle'}</button>
+    </div>
+  </div>`;
+}
+
+function renderQuizSlate() {
+  const ql=state.quizLetter, ac=ql.g[1];
+  return `<div class="slate-wrap">
+    <div class="qcard" style="background:linear-gradient(135deg,${ql.g[0]}20,${ac}15);border:1px solid ${ac}44;">
+      <div>
+        <div style="font-size:9px;color:${ac}88;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Quiz écriture ✏️</div>
+        <div style="font-size:17px;font-weight:700;color:#e8dcc8;">Trace : <span style="color:${ac}">${ql.name.toUpperCase()}</span></div>
+        <div style="font-size:10px;color:#e8dcc855;font-style:italic;margin-top:1px;">${ql.pron} · ${ql.sound}</div>
+      </div>
+      <button class="btn" id="qw-next" style="flex:none;padding:6px 11px;font-size:10px;white-space:nowrap;">Suivant →</button>
+    </div>
+    <div class="slate-box" style="border-color:${ac}55;" id="quiz-write-box">
+      <div class="slate-tag" style="color:${ac}88;">${state.revealed?'Réponse : '+ql.arabic:'Ardoise vide · dessine !'}</div>
+      <canvas id="qw-model"></canvas>
+      <canvas id="qw-ink" class="ink"></canvas>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="qw-wipe">🗑️ Effacer</button>
+      <button class="btn blue" id="qw-reveal" ${state.revealed?'disabled':''} style="${state.revealed?'opacity:0.4':''}">
+        ${state.revealed?'✔ Révélée':'🔍 Vérifier'}
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderPanel(sel) {
+  if(!sel) return `<div class="panel"><div class="panel-empty">
+    <div style="font-size:28px;color:#c8a96e;">☽</div>
+    <p style="font-size:11px;color:#e8dcc8;letter-spacing:1px;text-align:center;">Clique sur une lettre pour la tracer</p>
+  </div></div>`;
+  const ac=sel.g[1], idx=letters.indexOf(sel);
+  return `<div class="panel" style="border-color:${sel.g[0]}88;box-shadow:0 0 50px ${ac}18;">
+    <div class="panel-inner">
+      <div class="panel-num" style="background:linear-gradient(135deg,${sel.g[0]},${ac})">#${idx+1}</div>
+      <div class="panel-letter fadein" style="color:${ac};text-shadow:0 0 60px ${ac}55;">${sel.arabic}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <span class="panel-name" style="color:${ac};">${sel.name}</span>
+        <span class="panel-pron" style="background:${sel.g[0]}33;color:${ac};border:1px solid ${ac}44;">${sel.pron}</span>
+      </div>
+      <p class="panel-sound">🔊 ${sel.sound}</p>
+      <div class="panel-ex" style="border:1px solid ${ac}33;background:${sel.g[0]}22;">
+        <span class="panel-ar" style="color:${ac};">${sel.ex}</span>
+        <span class="panel-fr">— ${sel.fr}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderGrid(showLabels) {
+  return `<div class="grid">` + letters.map((l,i) => {
+    const sel = state.selected?.name===l.name;
+    const ac  = l.g[1];
+    const bg  = sel ? `linear-gradient(145deg,${l.g[0]},${ac})` : `linear-gradient(145deg,${l.g[0]}20,${ac}35)`;
+    const bc  = sel ? ac : `${ac}44`;
+    const sh  = sel ? `0 8px 28px ${l.g[0]}66` : "0 2px 10px #0004";
+    const tf  = sel ? "translateY(-4px) scale(1.06)" : "scale(1)";
+    const lc  = sel ? "#fff" : ac;
+    return `<button class="card ${showLabels?'':'no-labels'}" data-idx="${i}"
+      style="border-color:${bc};background:${bg};transform:${tf};box-shadow:${sh};">
+      <div class="card-arabic" style="color:${lc};text-shadow:${sel?`0 0 24px ${ac}99`:'none'};">${l.arabic}</div>
+      ${showLabels?`<div class="card-name" style="color:${sel?'rgba(255,255,255,0.95)':'#e8dcc8aa'};">${l.name}</div>
+      <div class="card-pron" style="border:1px solid ${sel?'rgba(255,255,255,0.22)':ac+'33'};color:${sel?'rgba(255,255,255,0.7)':ac+'cc'};background:${sel?'rgba(255,255,255,0.12)':l.g[0]+'33'};">${l.pron}</div>`:''}
+    </button>`;
+  }).join('') + `</div>`;
+}
+
+function renderQuiz() {
+  const s=state, t=s.target, pct=s.total>0?Math.round(s.score/s.total*100):0;
+  return `
+  <div class="quiz-top">
+    <button class="back-btn" id="back-btn">← Retour</button>
+    <span class="quiz-title">Quiz Reconnaissance 🎯</span>
+    <div style="width:70px;"></div>
+  </div>
+
+  ${!s.soundOn?`<button class="unlock-btn" id="unlock-btn">🔊 Appuie ici pour activer le son</button>`:
+    `<div style="font-size:11px;color:#3DC98A88;margin-bottom:8px;position:relative;z-index:1;">🔊 Son activé</div>`}
+
+  <div class="score-row">
+    ${[
+      {v:s.score, lb:`Bonne${s.score>1?"s":""}`, c:"#3DC98A"},
+      {v:s.total, lb:"Total", c:"#e8dcc8"},
+      {v:pct+"%", lb:"Score", c:pct>=70?"#3DC98A":pct>=40?"#E8A94A":"#E05A55"},
+      {v:"🔥"+s.streak, lb:"Série", c:"#F0935A"},
+    ].map(({v,lb,c})=>`<div class="score-card"><div class="score-num" style="color:${c};">${v}</div><div class="score-lb">${lb}</div></div>`).join('')}
+  </div>
+
+  <div class="qbox" style="animation:${s.shaking?'shake .45s ease':s.celebrating?'celebrate .6s ease':'none'};">
+    <p class="qlabel">Trouve la lettre…</p>
+    <div class="qname">${t.name}<button class="speak-btn" id="speak-target">🔊</button></div>
+    <div class="qsound">${t.pron} · ${t.sound}</div>
+    ${s.result?`<div class="qresult">${s.result.ok?"✅ Bravo !":"❌ C'était "+t.arabic}</div>`:""}
+  </div>
+
+  ${renderGrid(false)}
+
+  ${s.total>0?`<p class="foot">Meilleure série : 🔥${s.best}</p>`:""}
+  `;
+}
+
+// ─── SLATE INIT ───────────────────────────────────────────────────────────────
+function initTrainSlate() {
+  const mc=document.getElementById("train-model");
+  const ic=document.getElementById("train-ink");
+  if(!mc||!ic) return;
+  trainSlate = new Slate(mc, ic, state.selected?.g[1]||"#c8a96e");
+  trainSlate.resize();
+  trainSlate.paintGhost(state.showGhost?state.selected?.arabic:null, 0.15);
+}
+
+function initQuizSlate() {
+  const mc=document.getElementById("qw-model");
+  const ic=document.getElementById("qw-ink");
+  if(!mc||!ic) return;
+  quizSlate = new Slate(mc, ic, state.quizLetter.g[1]);
+  quizSlate.resize();
+  if(state.revealed) quizSlate.paintGhost(state.quizLetter.arabic, 0.30);
+}
+
+// ─── EVENTS ───────────────────────────────────────────────────────────────────
+function bindEvents() {
+  // Unlock sound
+  document.getElementById("unlock-btn")?.addEventListener("click", ()=>{
+    unlockAudio(); state.soundOn=true; render();
+  });
+
+  // Explore tabs
+  document.querySelectorAll("[data-tab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.slateMode=btn.dataset.tab; state.selected=null;
+      state.revealed=false; state.showGhost=true;
+      render();
+    });
+  });
+
+  // Letter grid cards
+  document.querySelectorAll("[data-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const l=letters[+btn.dataset.idx];
+      speak(l.arabic);
+      if(state.screen==="explore") {
+        state.selected = state.selected?.name===l.name ? null : l;
+        state.showGhost=true;
+        render();
+      } else {
+        handleQuizAnswer(l);
+      }
+    });
+  });
+
+  // Train slate buttons
+  document.getElementById("train-wipe")?.addEventListener("click", ()=>trainSlate?.wipeInk());
+  document.getElementById("train-toggle")?.addEventListener("click", ()=>{
+    state.showGhost=!state.showGhost;
+    trainSlate?.paintGhost(state.showGhost?state.selected?.arabic:null, 0.15);
+    render();
+  });
+
+  // Quiz write buttons
+  document.getElementById("qw-wipe")?.addEventListener("click", ()=>quizSlate?.wipeInk());
+  document.getElementById("qw-reveal")?.addEventListener("click", ()=>{
+    state.revealed=true;
+    quizSlate?.paintGhost(state.quizLetter.arabic, 0.30);
+    render();
+  });
+  document.getElementById("qw-next")?.addEventListener("click", ()=>{
+    state.quizLetter=rnd(state.quizLetter.name);
+    state.revealed=false; render();
+  });
+
+  // Quiz recognition
+  document.getElementById("go-quiz")?.addEventListener("click", ()=>{ state.screen="quiz"; render(); });
+  document.getElementById("back-btn")?.addEventListener("click", ()=>{ state.screen="explore"; render(); });
+  document.getElementById("speak-target")?.addEventListener("click", ()=>speak(state.target.arabic));
+}
+
+function handleQuizAnswer(l) {
+  if(state.result) return;
+  speak(l.arabic);
+  const ok = l.name===state.target.name;
+  state.result={ok, chosen:l.name};
+  state.total++;
+  if(ok){
+    state.score++; state.streak++; state.best=Math.max(state.best,state.streak);
+    state.celebrating=true;
+    setTimeout(()=>{state.celebrating=false;},700);
+  } else {
+    state.streak=0; state.shaking=true;
+    setTimeout(()=>{state.shaking=false;},500);
+  }
+  render();
+  setTimeout(()=>{
+    const next=rnd(state.target.name);
+    state.target=next; state.result=null;
+    render();
+    setTimeout(()=>speak(next.arabic),150);
+  },1400);
+}
+
+// ─── START ────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
